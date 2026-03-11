@@ -160,11 +160,21 @@ export class GameScene extends Phaser.Scene {
             this.mRight = false;
         };
 
-        joyZone.on('pointerdown', updateJoy);
+        joyZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => updateJoy(pointer));
         joyZone.on('pointermove', (pointer: Phaser.Input.Pointer) => {
             if (pointer.isDown) updateJoy(pointer);
         });
-        joyZone.on('pointerup', resetJoy);
+        joyZone.on('pointerup', () => {
+            // Check if any pointer is still down in the left area
+            const p1 = this.input.pointer1;
+            const p2 = this.input.pointer2;
+            const p3 = this.input.pointer3;
+            const anyLeftDown = (p1.isDown && p1.x < 240) || (p2.isDown && p2.x < 240) || (p3.isDown && p3.x < 240);
+            
+            if (!anyLeftDown) {
+                resetJoy();
+            }
+        });
         joyZone.on('pointerout', resetJoy);
 
         // Fire Button (Right side)
