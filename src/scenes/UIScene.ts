@@ -25,8 +25,8 @@ export class UIScene extends Phaser.Scene {
 
         this.banner = this.add.text(240, 320, '', { fontFamily: 'monospace', fontSize: '32px', color: '#ff0', fontStyle: 'bold', align: 'center', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5).setAlpha(0);
 
-        this.pauseBg = this.add.rectangle(240, 320, 480, 640, 0x000000, 0.5).setAlpha(0);
-        this.pauseText = this.add.text(240, 320, 'PAUSE', { fontFamily: 'monospace', fontSize: '48px', color: '#fff' }).setOrigin(0.5).setAlpha(0);
+        this.pauseBg = this.add.rectangle(240, 400, 480, 800, 0x000000, 0.5).setAlpha(0);
+        this.pauseText = this.add.text(240, 400, 'PAUSE', { fontFamily: 'monospace', fontSize: '48px', color: '#fff' }).setOrigin(0.5).setAlpha(0);
     }
 
     updateStats(score: number, lives: number, level: number) {

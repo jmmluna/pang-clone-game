@@ -8,7 +8,7 @@ import { GameOverScene } from './scenes/GameOverScene';
 export const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: 480,
-    height: 640,
+    height: 800,
     backgroundColor: '#000000',
     scale: {
         mode: Phaser.Scale.FIT,

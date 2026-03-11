@@ -31,9 +31,8 @@ export class GameScene extends Phaser.Scene {
 
     private mLeft: boolean = false;
     private mRight: boolean = false;
-    private btnLeft!: Phaser.GameObjects.Rectangle;
-    private btnRight!: Phaser.GameObjects.Rectangle;
-    private btnFire!: Phaser.GameObjects.Rectangle;
+    private joyStick!: Phaser.GameObjects.Arc;
+    private btnFireInner!: Phaser.GameObjects.Arc;
 
     private levelTime: number = 0;
     private timeLeft: number = 0;
@@ -122,23 +121,74 @@ export class GameScene extends Phaser.Scene {
     }
 
     setupMobileControls() {
-        let mW = this.cameras.main.width; let mH = this.cameras.main.height;
-        this.btnLeft = this.add.rectangle(60, mH - 60, 100, 100, 0xffffff, 0.2).setInteractive();
-        this.btnLeft.on('pointerdown', () => this.mLeft = true);
-        this.btnLeft.on('pointerup', () => this.mLeft = false);
-        this.btnLeft.on('pointerout', () => this.mLeft = false);
+        // Control panel background (y: 640 to 800)
+        this.add.rectangle(240, 720, 480, 160, 0x1a1a1a);
+        this.add.rectangle(240, 640, 480, 4, 0x444444).setOrigin(0.5, 0); // border
 
-        this.btnRight = this.add.rectangle(180, mH - 60, 100, 100, 0xffffff, 0.2).setInteractive();
-        this.btnRight.on('pointerdown', () => this.mRight = true);
-        this.btnRight.on('pointerup', () => this.mRight = false);
-        this.btnRight.on('pointerout', () => this.mRight = false);
+        // Joystick (Left side)
+        const joyX = 120;
+        const joyY = 720;
+        this.add.circle(joyX, joyY, 50, 0x222222).setStrokeStyle(4, 0x111111);
+        this.joyStick = this.add.circle(joyX, joyY, 25, 0x666666).setStrokeStyle(2, 0x888888);
+        
+        let joyZone = this.add.zone(120, 720, 240, 160).setInteractive();
+        
+        const updateJoy = (pointer: Phaser.Input.Pointer) => {
+            let dx = pointer.x - joyX;
+            let dy = pointer.y - joyY;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            const maxDist = 30;
+            
+            if (dist > maxDist) {
+                dx = (dx / dist) * maxDist;
+                dy = (dy / dist) * maxDist;
+            }
+            
+            this.joyStick.setPosition(joyX + dx, joyY + dy);
+            
+            const deadzone = 10;
+            this.mLeft = dx < -deadzone;
+            this.mRight = dx > deadzone;
+        };
 
-        this.btnFire = this.add.rectangle(mW - 80, mH - 60, 120, 100, 0xff0000, 0.2).setInteractive();
-        this.btnFire.on('pointerdown', () => this.player.shoot());
+        const resetJoy = () => {
+            this.joyStick.setPosition(joyX, joyY);
+            this.mLeft = false;
+            this.mRight = false;
+        };
 
-        this.add.text(60, mH - 60, '<', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
-        this.add.text(180, mH - 60, '>', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
-        this.add.text(mW - 80, mH - 60, 'F', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
+        joyZone.on('pointerdown', updateJoy);
+        joyZone.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.isDown) updateJoy(pointer);
+        });
+        joyZone.on('pointerup', resetJoy);
+        joyZone.on('pointerout', resetJoy);
+
+        // Fire Button (Right side)
+        const fireX = 360;
+        const fireY = 720;
+        this.add.circle(fireX, fireY, 40, 0x660000).setStrokeStyle(4, 0x330000);
+        this.btnFireInner = this.add.circle(fireX, fireY, 32, 0xff0000);
+        
+        // Add a highlight reflection to the button for a more arcade look
+        this.add.circle(fireX - 10, fireY - 10, 8, 0xffffff, 0.3);
+
+        let fireZone = this.add.zone(360, 720, 240, 160).setInteractive();
+        
+        fireZone.on('pointerdown', () => {
+            this.btnFireInner.fillColor = 0xffaaaa;
+            this.player.shoot();
+        });
+
+        const resetFire = () => {
+             this.btnFireInner.fillColor = 0xff0000;
+        };
+
+        fireZone.on('pointerup', resetFire);
+        fireZone.on('pointerout', resetFire);
+        
+        // Label
+        this.add.text(fireX, fireY + 50, 'FIRE', { fontFamily: 'monospace', fontSize: '18px', color: '#fff', fontStyle: 'bold' }).setOrigin(0.5);
     }
 
     loadLevel(index: number) {
