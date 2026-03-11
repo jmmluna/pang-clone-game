@@ -1,5 +1,5 @@
 {
-  "name": "pang-ts",
+  "name": "pang-clone-game",
   "version": "1.0.0",
   "description": "Pang Clone in Phaser 3 with TypeScript",
   "scripts": {
