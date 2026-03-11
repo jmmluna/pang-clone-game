@@ -31,6 +31,9 @@ export class GameScene extends Phaser.Scene {
 
     private mLeft: boolean = false;
     private mRight: boolean = false;
+    private mFire: boolean = false;
+    private lastFireTime: number = 0;
+    private fireCooldown: number = 250; // ms between shots when holding
     private joyStick!: Phaser.GameObjects.Arc;
     private btnFireInner!: Phaser.GameObjects.Arc;
 
@@ -177,11 +180,12 @@ export class GameScene extends Phaser.Scene {
         
         fireZone.on('pointerdown', () => {
             this.btnFireInner.fillColor = 0xffaaaa;
-            this.player.shoot();
+            this.mFire = true;
         });
 
         const resetFire = () => {
              this.btnFireInner.fillColor = 0xff0000;
+             this.mFire = false;
         };
 
         fireZone.on('pointerup', resetFire);
@@ -283,8 +287,18 @@ export class GameScene extends Phaser.Scene {
         if (this.keys.RIGHT.isDown || this.keys.D.isDown || this.mRight) dir = 1;
 
         this.player.move(dir);
-        if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE) || Phaser.Input.Keyboard.JustDown(this.keys.UP)) {
-            this.player.shoot();
+        
+        // Continuous Fire logic
+        const spaceDown = this.keys.SPACE.isDown || this.keys.UP.isDown;
+        if (spaceDown || this.mFire) {
+            const now = this.time.now;
+            if (now - this.lastFireTime > this.fireCooldown) {
+                this.player.shoot();
+                this.lastFireTime = now;
+            }
+        } else {
+            // Reset lastFireTime so the next single tap is immediate
+            // or just let it be, the cooldown will have passed anyway.
         }
     }
 }
